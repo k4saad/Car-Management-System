@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 * */
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/cars")
 public class CarController {
 
     private final CarService carService;
@@ -25,7 +25,7 @@ public class CarController {
     /*
     * Endpoint to add new car to the database
     * */
-    @PostMapping("cars")
+    @PostMapping
     public ResponseEntity<String> createCar(
             @RequestBody Car car
     ) {
@@ -47,7 +47,7 @@ public class CarController {
     * I have added request parameter as an optional argument, so that user can add parameter to filter by
     * name, model and year
     * */
-    @GetMapping("cars")
+    @GetMapping
     public ResponseEntity<Page<Car>> getAllCars(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String model,
@@ -64,6 +64,56 @@ public class CarController {
             return new ResponseEntity<>(cars, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    /*
+    *
+    * Endpoint to Globally search for cars by name, model, year, color, or fuel type
+    */
+    @GetMapping("/search")
+    public ResponseEntity<Page<Car>> searchCars(
+            @RequestParam String keyword,
+            Pageable pageable
+    ) {
+        try {
+            Page<Car> cars = carService.globalSearch(keyword, pageable);
+            return new ResponseEntity<>(cars, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    /*
+    * Endpoint for updating existing car using id
+    * */
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateCar(
+            @PathVariable Integer id,
+            @RequestBody Car updatedCar
+    ) {
+        try {
+            Car car = carService.updateCar(id, updatedCar);
+            return new ResponseEntity<>("Car updated successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to update car: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /*
+    * Endpoint for deleting the car using id
+    * */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteCar(
+            @PathVariable Integer id
+    ) {
+        try {
+            carService.deleteCar(id);
+            return new ResponseEntity<>("Car deleted successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to delete car: " + e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 

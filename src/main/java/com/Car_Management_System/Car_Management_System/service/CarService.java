@@ -50,4 +50,39 @@ public class CarService {
 
         return carRepository.findAll(pageable);
     }
+
+    // This method will take the keyword and then call the repository method to search the database with specified keyword
+    public Page<Car> globalSearch(String keyword, Pageable pageable) {
+        return carRepository.globalSearch(keyword, pageable);
+    }
+
+    public Car updateCar(Integer id, Car updatedCar) {
+
+        // First we find if the car exist or not, if not then we will throw the Run time Exception
+        Car existingCar = carRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Car not found with ID: " + id));
+
+        // Now we will update field with the values we received from the user
+        existingCar.setName(updatedCar.getName());
+        existingCar.setModel(updatedCar.getModel());
+        existingCar.setYear(updatedCar.getYear());
+        existingCar.setPrice(updatedCar.getPrice());
+        existingCar.setColor(updatedCar.getColor());
+        existingCar.setFuelType(updatedCar.getFuelType());
+
+        // Now we will save the updated car details and return the value we get from the save method
+        return carRepository.save(existingCar);
+    }
+
+    public void deleteCar(Integer id) {
+
+        // First we will check if the car with given id exists of not
+        // If it does not exist then we will throw run time exception.
+        if (!carRepository.existsById(id)) {
+            throw new RuntimeException("Car not found with ID: " + id);
+        }
+
+        // If exist then we will delete the car with given id
+        carRepository.deleteById(id);
+    }
 }
