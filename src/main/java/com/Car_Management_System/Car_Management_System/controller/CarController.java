@@ -2,11 +2,14 @@ package com.Car_Management_System.Car_Management_System.controller;
 
 import com.Car_Management_System.Car_Management_System.model.Car;
 import com.Car_Management_System.Car_Management_System.service.CarService;
+import com.Car_Management_System.Car_Management_System.validation.CarValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 /*
 * Controller class that expose endpoints.
@@ -17,9 +20,11 @@ import org.springframework.web.bind.annotation.*;
 public class CarController {
 
     private final CarService carService;
+    private final CarValidator carValidator;
 
-    public CarController(CarService carService) {
+    public CarController(CarService carService, CarValidator carValidator) {
         this.carService = carService;
+        this.carValidator = carValidator;
     }
 
     /*
@@ -29,6 +34,14 @@ public class CarController {
     public ResponseEntity<String> createCar(
             @RequestBody Car car
     ) {
+
+        // Here I have implemented checks for validation of car field
+        // If validation fails then error code bad request and all the violation message will be returned.
+
+        Set<String> violations = carValidator.validate(car);
+        if(!violations.isEmpty()){
+            return new ResponseEntity<>(String.join("\n", violations), HttpStatus.BAD_REQUEST);
+        }
 
         // Here I used try-catch block to implement error handling in case of error adding car
         // If error is encountered then user is notified with the error message and INTERNAL_SERVER_ERROR code
@@ -94,6 +107,15 @@ public class CarController {
             @PathVariable Integer id,
             @RequestBody Car updatedCar
     ) {
+
+        // Here I have implemented checks for validation of car field
+        // If validation fails then error code bad request and all the violation message will be returned.
+
+        Set<String> violations = carValidator.validate(updatedCar);
+        if(!violations.isEmpty()){
+            return new ResponseEntity<>(String.join("\n", violations), HttpStatus.BAD_REQUEST);
+        }
+
         try {
             Car car = carService.updateCar(id, updatedCar);
             return new ResponseEntity<>("Car updated successfully", HttpStatus.OK);
